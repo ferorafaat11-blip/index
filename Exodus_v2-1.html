@@ -26,12 +26,20 @@
 
         .logo-container {
             margin-bottom: 5px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .logo-container img {
             width: 120px;
             height: 120px;
             object-fit: contain;
+        }
+
+        .logo-placeholder {
+            font-size: 80px;
         }
 
         h1 {
@@ -125,9 +133,11 @@
         }
 
         canvas {
+            display: block;
             border-radius: 50%;
             box-shadow: 0 0 20px rgba(0,0,0,0.6), 0 0 40px rgba(0,255,240,0.2);
             transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);
+            background: #1a1a2e;
         }
 
         button {
@@ -332,7 +342,8 @@
 <body>
 
     <div class="logo-container">
-        <img id="logoImg" src="" alt="Logo" />
+        <img id="logoImg" src="" alt="Logo" onerror="document.getElementById('logoImg').style.display='none'; document.querySelector('.logo-placeholder').style.display='block';" />
+        <div class="logo-placeholder" style="display:none;">🎡</div>
     </div>
     <h1>🎮 مسابقة عجلة الحظ 🎮</h1>
 
@@ -399,8 +410,13 @@
 
     <script>
         // ===== إعداد اللوجو =====
-        const LOGO_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAEZQAABGUCAYAAADb7YylAAAACXBIWXMAAC4jAAAuIwF4pT92AAAgAElEQVR4nOzcAQ0AIRDAsOf9ez5MkBCWVsEUbM3MBwAAAAAAAAAAAAAAAAAAAA[...]";
-        document.getElementById('logoImg').src = 'data:image/png;base64,' + LOGO_BASE64;
+        const LOGO_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+        try {
+            const img = document.getElementById('logoImg');
+            img.src = 'data:image/png;base64,' + LOGO_BASE64;
+        } catch(e) {
+            console.log('Logo loading failed');
+        }
 
         // الأقسام والألوان (مع الينور)
         const categories = ["رياضي", "know yourself", "جغرافيا", "معلومات تاريخية", "ضربة حظ", "الينور"];
@@ -416,34 +432,35 @@
         };
         let currentTeam = null;
 
-        // بنك الأسئلة (نسخة قابلة للتعديل - نحذف السؤال بعد استخدامه)
+        // بنك الأسئلة
         const quizBank = {
             "know yourself": [
-                { q: "المشاعر هي:", options: ["أفكار منطقية عن الموقف", "استجابات جسدية ونفسية نمر بها تجاه موقف أو شخص", "قرا[...]
-                { q: "الفرق الأساسي بين 'الفكرة' و 'الشعور' إن:", options: ["الاثنين نفس الشيء", "الفكرة في الرأس، والشعور في �[...]
-                { q: "من المشاعر الأساسية الـ 6 حسب علم النفس:", options: ["الملل - الفضول - الندم", "الفرح - الحزن - الغضب - الخ�[...]
-                { q: "أي من التالي يعتبر شعور إيجابي؟", options: ["القلق", "الامتنان", "الإحباط", "الرفض"], answer: "الامتنان", type: "m[...]
-                { q: "المشاعر بتأثر على سلوكنا إزاي؟", options: ["مش بتأثر خالص", "بتخلينا نتصرف بدون ما نفكر في النتائج", "ب�[...]
+                { q: "المشاعر هي:", options: ["أفكار منطقية عن الموقف", "استجابات جسدية ونفسية نمر بها تجاه موقف أو شخص", "قرارات عقلانية بحتة", "ردود فعل غريزية فقط"], answer: "استجابات جسدية ونفسية نمر بها تجاه موقف أو شخص" },
+                { q: "الفرق الأساسي بين 'الفكرة' و 'الشعور' إن:", options: ["الاثنين نفس الشيء", "الفكرة في الرأس، والشعور في الجسم والقلب", "الشعور أكثر عقلانية", "لا يوجد فرق"], answer: "الفكرة في الرأس، والشعور في الجسم والقلب" },
+                { q: "من المشاعر الأساسية الـ 6 حسب علم النفس:", options: ["الملل - الفضول - الندم", "الفرح - الحزن - الغضب - الخوف - المفاجأة - الاشمئزاز", "الفرح والحزن فقط", "العشرة مشاعر"], answer: "الفرح - الحزن - الغضب - الخوف - المفاجأة - الاشمئزاز" },
+                { q: "أي من التالي يعتبر شعور إيجابي؟", options: ["القلق", "الامتنان", "الإحباط", "الرفض"], answer: "الامتنان" },
+                { q: "المشاعر بتأثر على سلوكنا إزاي؟", options: ["مش بتأثر خالص", "بتخلينا نتصرف بدون ما نفكر في النتائج", "بتؤثر على قراراتنا وتصرفاتنا", "تأثيرها ضعيف جداً"], answer: "بتؤثر على قراراتنا وتصرفاتنا" }
             ],
             "رياضي": [
-                { q: "ما هو المنتخب الأكثر تتويجاً ببطولة كأس العالم؟", options: ["البرازيل", "ألمانيا", "الأرجنتين", "إيطالي[...]
-                { q: "من هو اللاعب الأكثر تسجيلاً للأهداف في تاريخ كأس العالم؟", options: ["ميروسلاف كلوزه", "رونالدو البرا[...]
-                { q: "كم عدد المنتخبات المشاركة في كأس العالم بداية من عام 2026؟", options: ["32 منتخب", "48 منتخب", "40 منتخب", "64 م�[...]
-                { q: "ما هو النادي الأكثر فوزاً ببطولة دوري أبطال أوروبا؟", options: ["ريال مدريد", "ميلان", "ليفربول", "برشلو[...]
-                { q: "من هو الهداف التاريخي لبطولة دوري أبطال أوروبا؟", options: ["كريستيانو رونالدو", "ليونيل ميسي", "كريم �[...]
+                { q: "ما هو المنتخب الأكثر تتويجاً ببطولة كأس العالم؟", options: ["البرازيل", "ألمانيا", "الأرجنتين", "إيطاليا"], answer: "البرازيل" },
+                { q: "من هو اللاعب الأكثر تسجيلاً للأهداف في تاريخ كأس العالم؟", options: ["ميروسلاف كلوزه", "رونالدو البرازيلي", "بيليه", "مارادونا"], answer: "ميروسلاف كلوزه" },
+                { q: "كم عدد المنتخبات المشاركة في كأس العالم بداية من عام 2026؟", options: ["32 منتخب", "48 منتخب", "40 منتخب", "64 منتخب"], answer: "48 منتخب" },
+                { q: "ما هو النادي الأكثر فوزاً ببطولة دوري أبطال أوروبا؟", options: ["ريال مدريد", "ميلان", "ليفربول", "برشلونة"], answer: "ريال مدريد" },
+                { q: "من هو الهداف التاريخي لبطولة دوري أبطال أوروبا؟", options: ["كريستيانو رونالدو", "ليونيل ميسي", "كريم بنزيما", "دييجو كوستا"], answer: "كريستيانو رونالدو" }
             ],
             "جغرافيا": [
-                { q: "ما هي أكبر دولة في العالم من حيث المساحة؟", options: ["روسيا", "كندا", "الصين", "أمريكا"], answer: "روسيا", type: "[...]
-                { q: "ما هو المحيط الأكبر في العالم؟", options: ["المحيط الهادئ", "المحيط الأطلسي", "المحيط الهندي", "المحيط ا[...]
-                { q: "أي دولة يمر بها خط الاستواء وتضم أعلى قمة جبلية فيها؟", options: ["الإكوادور", "البرازيل", "كينيا", "إند�[...]
-                { q: "كم عدد قارات العالم؟", options: ["5 قارات", "6 قارات", "7 قارات", "8 قارات"], answer: "7 قارات", type: "mcq" }
+                { q: "ما هي أكبر دولة في العالم من حيث المساحة؟", options: ["روسيا", "كندا", "الصين", "أمريكا"], answer: "روسيا" },
+                { q: "ما هو المحيط الأكبر في العالم؟", options: ["المحيط الهادئ", "المحيط الأطلسي", "المحيط الهندي", "المحيط المتجمد"], answer: "المحيط الهادئ" },
+                { q: "أي دولة يمر بها خط الاستواء وتضم أعلى قمة جبلية فيها؟", options: ["الإكوادور", "البرازيل", "كينيا", "إندونيسيا"], answer: "الإكوادور" },
+                { q: "كم عدد قارات العالم؟", options: ["5 قارات", "6 قارات", "7 قارات", "8 قارات"], answer: "7 قارات" },
+                { q: "ما هو أكبر محيط في العالم؟", options: ["المتوسط", "الهادئ", "الأطلسي", "الهندي"], answer: "الهادئ" }
             ],
             "معلومات تاريخية": [
-                { q: "ما هو الحدث الذي يُعد الشرارة الأولى لاندلاع الحرب العالمية الأولى؟", options: ["اغتيال ولي عهد النم[...]
-                { q: "في أي عام سقط جدار برلين؟", options: ["1985", "1989", "1991", "1995"], answer: "1989", type: "mcq" },
-                { q: "ما اسم الثورة التي أطاحت بحكم القياصرة في روسيا عام 1917؟", options: ["الثورة الفرنسية", "الثورة البلشف�[...]
-                { q: "من كان أول رئيس للولايات المتحدة الأمريكية؟", options: ["جورج واشنطن", "أبراهام لينكون", "توماس جيفرسو[...]
-                { q: "ما هي المعركة التي انتهت بهزيمة نابليون بونابرت نهائياً عام 1815؟", options: ["معركة واترلو", "معركة ما�[...]
+                { q: "ما هو الحدث الذي يُعد الشرارة الأولى لاندلاع الحرب العالمية الأولى؟", options: ["سقوط القسطنطينية", "اغتيال ولي عهد النمسا", "غزو بولندا", "معركة الضباب"], answer: "اغتيال ولي عهد النمسا" },
+                { q: "في أي عام سقط جدار برلين؟", options: ["1985", "1989", "1991", "1995"], answer: "1989" },
+                { q: "ما اسم الثورة التي أطاحت بحكم القياصرة في روسيا عام 1917؟", options: ["الثورة الفرنسية", "الثورة البلشفية", "الثورة الأمريكية", "ثورة أكتوبر"], answer: "الثورة البلشفية" },
+                { q: "من كان أول رئيس للولايات المتحدة الأمريكية؟", options: ["جورج واشنطن", "أبراهام لينكون", "توماس جيفرسون", "جيمس ماديسون"], answer: "جورج واشنطن" },
+                { q: "ما هي المعركة التي انتهت بهزيمة نابليون بونابرت نهائياً عام 1815؟", options: ["معركة واترلو", "معركة ماراثون", "معركة هاستينجز", "معركة بليانة"], answer: "معركة واترلو" }
             ],
             "ضربة حظ": [
                 { q: "سمّع مزمور: اللهم تراءف عليَّ يا الله كعظيم رحمتك. 🙏" },
@@ -457,27 +474,12 @@
                 { q: "اتكلم بالفصحى للسؤال القادم. 📜" },
                 { q: "قلد شخصية كتابية والباقي يخمنها. 🎭" },
                 { q: "ردد وراء المجموعة: 'أنا عبقري بس الحظ مش معايا' 3 مرات. 😂" },
-                { q: "قول 3 ترانيم تبدأ بحرف معين. 🎶" },
-                { q: "قف على رجل واحدة لمدة 20 ثانية. 🤸" },
-                { q: "اعمل ابتسامه عريضة حتى نهاية السؤال التالي. 😁" },
-                { q: "قل أسماء التلاميذ الذين تتذكرهم في 15 ثانية. ✝️" },
-                { q: "صفّق 10 مرات بإيقاع منتظم. 👏" },
-                { q: "اتكلم بصوت منخفض جدًا لمدة سؤال كامل. 🤫" },
-                { q: "سمّع جزءًا من أي مزمور تحفظه. 🎵" },
-                { q: "قل 'مبروك للفائز' وكأنك مذيع مباراة. ⚽" },
-                { q: "اعمل حركة رياضية يكررها الجميع. 🏋️" },
-                { q: "قل 3 معجزات للسيد المسيح. ✨" },
-                { q: "تحدث كأنك طفل صغير لمدة دقيقة. 👶" },
-                { q: "اذكر 5 أنبياء من العهد القديم. 👳" },
-                { q: "قل ترنيمة من غير لحن والباقي يخمنها. 🎤" },
-                { q: "اعمل مشية بطيئة جدًا حتى مقعدك. 🐢" },
-                { q: "اذكر 3 فضائل مسيحية بسرعة. 💎" },
-                { q: "قل اسم 10 أسفار في 20 ثانية. ⏱️" }
+                { q: "قول 3 ترانيم تبدأ بحرف معين. 🎶" }
             ],
             "الينور": [
                 { q: "كلم الرب موسى قائلا كلم كل جماعه بني إسرائيل وقل لهم تكونون .....لاني ....الرب الهكم" },
-                { q: "من أهم ما يشير للثالوث في العهد القديم (خلق الإنسان _استخدام الله ضمير جمع في بعض الايات _بلبل ال[...]
-                { q: "روح الرب علي الرب مسحني البشر المساكين .......البشر بسنه مقبوله ....من قرأ هذا الجزء بالهيكل إلى هذه[...]
+                { q: "من أهم ما يشير للثالوث في العهد القديم" },
+                { q: "روح الرب علي الرب مسحني" },
                 { q: "قديسين ..... قدوس" }
             ]
         };
@@ -533,6 +535,8 @@
                 ctx.arc(180, 180, 180, i * segmentAngle, (i + 1) * segmentAngle);
                 ctx.lineTo(180, 180);
                 ctx.fill();
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
                 ctx.stroke();
 
                 ctx.save();
@@ -545,9 +549,19 @@
                 ctx.restore();
             }
         }
-        drawWheel();
-        updateStatsBar(null);
-        updateTeamScores();
+        
+        // تأكد من تحميل الصفحة قبل الرسم
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                drawWheel();
+                updateStatsBar(null);
+                updateTeamScores();
+            });
+        } else {
+            drawWheel();
+            updateStatsBar(null);
+            updateTeamScores();
+        }
 
         // ===== صوت العجلة =====
         function playSpinSound() {
@@ -610,17 +624,9 @@
             currentRotation = totalTargetRotation;
 
             setTimeout(() => {
-                // تصحيح الحساب: المؤشر يشير لأعلى (0 راديان = يمين)
-                // نحسب الزاوية من 0 وحتى 2π بشكل طبيعي
                 const normalizedRotation = (totalTargetRotation % (2 * Math.PI));
-                
-                // نحول الدوران إلى موقع القطاع
-                // الدوران الإيجابي يعني الحركة عكس عقارب الساعة
-                // لذا نطرح من 2π للحصول على الموقع الصحيح تحت المؤشر
                 let wheelAngle = (Math.PI / 2 - normalizedRotation) % (2 * Math.PI);
                 if (wheelAngle < 0) wheelAngle += (2 * Math.PI);
-                
-                // نجد أي قطاع يقع تحت المؤشر (في الأعلى)
                 const winningIndex = Math.floor(wheelAngle / segmentAngle) % numSegments;
 
                 openQuiz(activeCategories[winningIndex]);
@@ -674,7 +680,6 @@
 
             nextBtn.onclick = closeModal;
 
-            // سحب سؤال عشوائي
             const randomIndex = Math.floor(Math.random() * questions.length);
             currentQuestionIndex = randomIndex;
             const questionObj = questions[randomIndex];
@@ -690,10 +695,8 @@
                 teamSelector.style.display = "block";
                 quizBank[category].splice(randomIndex, 1);
             } else {
-                // عرض التايمر
                 timerContainer.style.display = "block";
                 startTimer(20, function() {
-                    // انتهى الوقت بدون إجابة
                     const allBtns = document.querySelectorAll(".option-btn");
                     allBtns.forEach(btn => btn.disabled = true);
                     feedback.innerText = "انتهى الوقت! ⏰";
@@ -706,13 +709,15 @@
                     updateStatsBar(category);
                 });
 
-                questionObj.options.forEach(opt => {
-                    const button = document.createElement("button");
-                    button.classList.add("option-btn");
-                    button.innerText = opt;
-                    button.onclick = () => checkAnswer(button, opt, questionObj.answer, questionObj.feedback, category, randomIndex);
-                    optionsBox.appendChild(button);
-                });
+                if (questionObj.options) {
+                    questionObj.options.forEach(opt => {
+                        const button = document.createElement("button");
+                        button.classList.add("option-btn");
+                        button.innerText = opt;
+                        button.onclick = () => checkAnswer(button, opt, questionObj.answer, questionObj.feedback, category, randomIndex);
+                        optionsBox.appendChild(button);
+                    });
+                }
             }
 
             modal.style.display = "flex";
@@ -725,17 +730,14 @@
             teamBtns.forEach(btn => btn.classList.remove("selected"));
             event.target.classList.add("selected");
             
-            // إضافة نقطة للفريق
             teamScores[teamName]++;
             updateTeamScores();
             
-            // حذف السؤال
             if (currentCategory && currentQuestionIndex !== null) {
                 quizBank[currentCategory].splice(currentQuestionIndex, 1);
                 updateStatsBar(currentCategory);
             }
             
-            // إغلاق النافذة
             document.getElementById("nextBtn").style.display = "block";
         }
 
@@ -790,7 +792,6 @@
                 feedback.style.color = "#21bf73";
                 playTone(523.25, 0.4);
                 
-                // عرض صندوق اختيار الفريق
                 document.getElementById("teamSelector").style.display = "block";
             } else {
                 selectedBtn.classList.add("wrong");

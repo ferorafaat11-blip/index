@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة عجلة الحظ التفاعلية</title>
+    <style>
+        :root { --bg-color:#1a1a2e; --card-bg:#16213e; --text-color:#ffffff; }
+        * { box-sizing: border-box; margin:0; padding:0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 10px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* LOGO */
+        .logo-container { 
+            line-height: 0; 
+            overflow: hidden; 
+            height: 150px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin-bottom: 4px;
+        }
+        .logo-container img { 
+            width: 400px; 
+            height: 400px; 
+            object-fit: contain; 
+        }
+
+        h1 { color: #00fff0; text-shadow: 0 0 10px rgba(0,255,240,0.5); margin: 4px 0; font-size: 22px; }
+
+        /* ===== STATS BAR ===== */
+        .stats-bar {
+            display: flex; gap: 12px; margin-bottom: 6px;
+            font-size: 13px; color: #ccc;
+            flex-wrap: wrap; justify-content: center;
+        }
+        .stats-bar span { background: rgba(255,255,255,0.07); border-radius: 8px; padding: 3px 12px; }
+        .stats-bar .highlight { color: #00fff0; font-weight: bold; }
+
+        /* ===== MAIN LAYOUT ===== */
+        .main-layout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            width: 100%;
+            max-width: 1000px;
+            padding: 0 10px;
+        }
+
+        /* ===== SCORE SIDE PANELS ===== */
+        .score-side {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 200px;
+            flex-shrink: 0;
+        }
+        .score-side-card {
+            background: rgba(255,255,255,0.06);
+            border: 2px solid rgba(255,255,255,0.15);
+            border-radius: 14px;
+            padding: 10px 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            user-select: none;
+        }
+        .score-side-card:hover { border-color: #00fff0; }
+        .score-side-card.active-team { box-shadow: 0 0 14px rgba(0,255,240,0.5); }
+        .score-side-name { font-size: 12px; color: #aaa; margin-bottom: 2px; }
+        .score-side-score { font-size: 42px; font-weight: 900; line-height: 1; margin-bottom: 6px; }
+        .score-side-btns { display: flex; gap: 6px; justify-content: center; }
+
+        /* ===== WHEEL CENTER ===== */
+        .wheel-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        .wheel-container {
+            position: relative;
+            margin: 6px auto;
+            width: 380px;
+            height: 380px;
+        }
+        .pointer {
+            position: absolute; top: -15px; left: 50%;
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #fff;
+            z-index: 10;
+            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5));
+        }
+        canvas { border-radius: 50%; box-shadow: 0 0 20px rgba(0,0,0,0.6), 0 0 40px rgba(0,255,240,0.2); }
+
+        /* ===== BUTTONS ===== */
+        .spin-btn {
+            background: linear-gradient(45deg, #00fff0, #0081ff);
+            border: none; color: #1a1a2e;
+            padding: 13px 36px; font-size: 18px; font-weight: bold;
+            border-radius: 30px; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,255,240,0.4);
+            transition: 0.3s ease; margin-top: 10px;
+        }
+        .spin-btn:hover { transform: scale(1.05); box-shadow: 0 5px 25px rgba(0,255,240,0.6); }
+        .spin-btn:disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; }
+
+        .reset-btn {
+            background: rgba(255,80,80,0.12);
+            border: 1px solid rgba(255,80,80,0.35);
+            color: #ff6060; padding: 7px 20px;
+            font-size: 13px; font-weight: bold;
+            border-radius: 20px; cursor: pointer;
+            transition: 0.2s; margin-top: 8px;
+        }
+        .reset-btn:hover { background: rgba(255,80,80,0.25); }
+
+        /* ===== MODAL ===== */
+        .modal {
+            display: none; position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background-color: rgba(0,0,0,0.85);
+            z-index: 20; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 24px; border-radius: 20px;
+            width: 90%; max-width: 520px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0,255,240,0.3);
+            border: 2px solid #00fff0;
+            animation: fadeIn 0.4s ease;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .category-title { font-size: 16px; color: #ff007f; letter-spacing: 2px; margin-bottom: 8px; }
+        .question-text { font-size: 20px; margin-bottom: 12px; line-height: 1.5; }
+
+        .options-container { display:flex; flex-direction:column; gap:10px; }
+        .option-btn {
+            background-color: rgba(255,255,255,0.05); color:#fff;
+            border:1px solid rgba(255,255,255,0.1);
+            padding:10px; border-radius:10px; font-size:16px;
+            cursor:pointer; text-align:right; transition:0.3s;
+        }
+        .option-btn:hover { background-color:rgba(0,255,240,0.1); border-color:#00fff0; }
+        .option-btn.correct { background-color:#21bf73!important; border-color:#21bf73!important; color:white; }
+        .option-btn.wrong   { background-color:#ff4b5c!important; border-color:#ff4b5c!important; color:white; }
+
+        .feedback-text { margin-top:12px; font-size:17px; font-weight:bold; min-height:22px; }
+        .cat-remaining { font-size:13px; color:#aaa; margin-top:6px; }
+
+        .modal-next-btn {
+            background: linear-gradient(45deg,#00fff0,#0081ff);
+            border:none; color:#1a1a2e;
+            padding:10px 28px; font-size:16px; font-weight:bold;
+            border-radius:24px; cursor:pointer;
+            box-shadow: 0 4px 12px rgba(0,255,240,0.4);
+            transition:0.3s; margin:14px auto 0; display:none;
+        }
+        .modal-next-btn:hover { transform:scale(1.05); }
+
+        .empty-category-msg { font-size:18px; color:#ff9f1c; margin:16px 0; }
+
+        .fill-input {
+            background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2);
+            color:#fff; padding:10px; border-radius:10px;
+            font-size:16px; width:100%; margin-bottom:10px;
+            text-align:right; direction:rtl;
+        }
+        .check-btn {
+            background: linear-gradient(45deg,#21bf73,#00fff0);
+            border:none; color:#1a1a2e;
+            padding:9px 24px; font-size:15px; font-weight:bold;
+            border-radius:20px; cursor:pointer; transition:0.2s;
+        }
+        .check-btn:hover { transform:scale(1.04); }
+
+        /* Mobile: hide side panels */
+        @media (max-width: 750px) {
+            .score-side { display: none; }
+            .main-layout { padding: 0 5px; }
+            .wheel-container { width: 320px; height: 320px; }
+        }
+
+        @keyframes fadeIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+    </style>
+</head>
+<body>
+
+<div class="logo-container">
+    <img id="logoImg" src="https://i.postimg.cc/7CTB2tRw/logo-exodus-png-w.png" alt="Logo" />
+</div>
+<h1>🎮 مسابقة عجلة الحظ 🎮</h1>
+
+<!-- SCOREBOARD (TOP) REMOVED -->
+
+<div class="stats-bar">
+    <span>إجمالي الأسئلة المتبقية: <span class="highlight" id="totalRemaining">-</span></span>
+    <span>أسئلة القسم: <span class="highlight" id="catRemaining">-</span></span>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="main-layout">
+    <!-- Left scores -->
+    <div class="score-side" id="scoreSideLeft"></div>
+
+    <!-- Wheel center -->
+    <div class="wheel-center">
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <canvas id="wheel" width="380" height="380"></canvas>
+        </div>
+        <button class="spin-btn" id="spinBtn" onclick="spinWheel()">لف العجلة! 🎡</button>
+        <button class="reset-btn" onclick="resetGame()">🔄 إعادة تعيين اللعبة</button>
+    </div>
+
+    <!-- Right scores -->
+    <div class="score-side" id="scoreSideRight"></div>
+</div>
+
+<!-- MODAL -->
+<div id="quizModal" class="modal">
+    <div class="modal-content">
+        <div id="modalCategory" class="category-title"></div>
+        <div id="modalQuestion" class="question-text"></div>
+        <div id="modalOptions" class="options-container"></div>
+        <div id="modalFeedback" class="feedback-text"></div>
+        <div class="cat-remaining" id="catRemainingModal"></div>
+        <button class="modal-next-btn" id="nextBtn" onclick="closeModal()">العودة للعجلة 🔄</button>
+    </div>
+</div>
+
+<script>
+// ===== لوجو =====
+// تم وضع الرابط المباشر للصورة في وسم <img>
+
+// ===== فرق وسكور =====
+const teamNames = ["Hachi", "خد منديل", "الحريفة", "متسألنيش عامتا"];
+const teamColors = ["#ff007f","#0abf53","#ff9f1c","#00fff0"];
+const scores = [0, 0, 0, 0];
+let activeTeam = 0;
+
+function loadScores() {
+    try {
+        const saved = localStorage.getItem('exodusScores');
+        if (saved) {
+            const arr = JSON.parse(saved);
+            arr.forEach((v, i) => { if (i < scores.length) scores[i] = v; });
+        }
+    } catch(e) {}
+}
+
+function saveScores() {
+    try { localStorage.setItem('exodusScores', JSON.stringify(scores)); } catch(e) {}
+}
+
+function makeTeamCard(i, cls, nameClass, scoreClass, btnsClass) {
+    const card = document.createElement('div');
+    card.className = cls + (i === activeTeam ? ' active-team' : '');
+    card.style.borderColor = i === activeTeam ? teamColors[i] : 'rgba(255,255,255,0.15)';
+    card.innerHTML = `
+        <div class="${nameClass}">${teamNames[i]}</div>
+        <div class="${scoreClass}" style="color:${teamColors[i]}">${scores[i]}</div>
+        <div class="${btnsClass}">
+            <button class="score-btn minus" onclick="changeScore(${i},-1,event)">−</button>
+            <button class="score-btn plus" onclick="changeScore(${i},1,event)">+</button>
+        </div>
+    `;
+    card.onclick = () => { activeTeam = i; renderScoreboard(); };
+    return card;
+}
+
+function renderScoreboard() {
+    // Top scoreboard (mobile) - REMOVED
+
+    // Left side panel (teams 0,1)
+    const sbLeft = document.getElementById('scoreSideLeft');
+    if (sbLeft) {
+        sbLeft.innerHTML = '';
+        [0, 1].forEach(i => {
+            sbLeft.appendChild(makeTeamCard(i, 'score-side-card', 'score-side-name', 'score-side-score', 'score-side-btns'));
+        });
+    }
+
+    // Right side panel (teams 2,3)
+    const sbRight = document.getElementById('scoreSideRight');
+    if (sbRight) {
+        sbRight.innerHTML = '';
+        [2, 3].forEach(i => {
+            sbRight.appendChild(makeTeamCard(i, 'score-side-card', 'score-side-name', 'score-side-score', 'score-side-btns'));
+        });
+    }
+}
+
+function changeScore(i, delta, event) {
+    event.stopPropagation();
+    scores[i] = Math.max(0, scores[i] + delta);
+    saveScores();
+    renderScoreboard();
+}
+
+function resetGame() {
+    if (!confirm('هتمسح كل النتائج والأسئلة؟ متقدرش ترجع!')) return;
+    try { localStorage.removeItem('exodusScores'); } catch(e) {}
+    location.reload();
+}
+
+loadScores();
+renderScoreboard();
+
+// ===== العجلة =====
+const CATEGORIES = ["رياضي", "know yourself", "جغرافيا", "معلومات تاريخية", "ضربة حظ", "الينور"];
+const COLORS     = ["#ff007f", "#711c91", "#0abf53", "#ff9f1c", "#00fff0", "#e63946"];
+
+let activeCategories = [...CATEGORIES];
+let activeColors     = [...COLORS];
+
+// الزاوية الحقيقية المتراكمة (بالدرجات) — نستخدم درجات لتجنب الـ floating point drift
+let totalDegrees = 0;
+
+const canvas = document.getElementById("wheel");
+const ctx    = canvas.getContext("2d");
+let timerInterval = null;
+
+// ===== بنك الأسئلة =====
+const quizBank = {
+    "know yourself": [
+        { q:"المشاعر هي:", options:["أفكار منطقية عن الموقف","استجابات جسدية ونفسية نمر بها تجاه موقف أو شخص","قرارات نتخذها بإرادتنا","حقائق علمية"], answer:"استجابات جسدية ونفسية نمر بها تجاه موقف أو شخص" },
+        { q:"الفرق الأساسي بين 'الفكرة' و 'الشعور' إن:", options:["الاثنين نفس الشيء","الفكرة في الرأس، والشعور في الجسم","الشعور دايمًا صح والفكرة دايمًا غلط","الفكرة تأخذ وقت والشعور لا"], answer:"الفكرة في الرأس، والشعور في الجسم" },
+        { q:"من المشاعر الأساسية الـ 6 حسب علم النفس:", options:["الملل - الفضول - الندم","الفرح - الحزن - الغضب - الخوف - الاشمئزاز - المفاجأة","الثقة - الغيرة - الطمع","الحماس - التوتر - الكسل"], answer:"الفرح - الحزن - الغضب - الخوف - الاشمئزاز - المفاجأة" },
+        { q:"أي من التالي يعتبر شعور إيجابي؟", options:["القلق","الامتنان","الإحباط","الرفض"], answer:"الامتنان" },
+        { q:"المشاعر بتأثر على سلوكنا إزاي؟", options:["مش بتأثر خالص","بتخلينا نتصرف بدون ما نفكر في النتائج","بتحدد طريقة كلامنا وقراراتنا وردود أفعالنا","بتوقف تفكيرنا تمامًا"], answer:"بتحدد طريقة كلامنا وقراراتنا وردود أفعالنا" }
+    ],
+    "رياضي": [
+        { q:"كانت هناك بطولتان لكأس العالم. ما اسم البطولة الأولى؟", options:["كأس جول ريميه / النصر","كأس الفيفا","كأس العالم الأولى","كأس القارات"], answer:"كأس جول ريميه / النصر" },
+        { q:"أي بلد فاز بأول كأس عالم في عام 1930؟", options:["أوروجواي","البرازيل","الأرجنتين","إيطاليا"], answer:"أوروجواي" },
+        { q:"أي بلد فاز بأكبر عدد من بطولات كأس العالم؟", options:["البرازيل","ألمانيا","إيطاليا","الأرجنتين"], answer:"البرازيل" },
+        { q:"فازت ثلاث دول بالمونديال مرتين. يمكنك تسميتهم؟", options:["الأرجنتين وفرنسا وأوروغواي","إيطاليا وألمانيا وفرنسا","البرازيل وإسبانيا وفرنسا","المكسيك وإنجلترا وهولندا"], answer:"الأرجنتين وفرنسا وأوروغواي" },
+        { q:"أي بلد شارك في ثلاث نهائيات لكأس العالم، لكنه لم يفز أبداً بالمنافسة؟", options:["هولندا","البرتغال","بولندا","كرواتيا"], answer:"هولندا" },
+        { q:"سيتم استضافة كأس العالم 2026 في ثلاث دول مختلفة. يمكنك تسميتهم؟", options:["الولايات المتحدة وكندا والمكسيك","الولايات المتحدة والمكسيك والبرازيل","كندا والمكسيك والأرجنتين","الولايات المتحدة وكندا وكولومبيا"], answer:"الولايات المتحدة وكندا والمكسيك" },
+        { q:"في أي بطولة كأس عالم سجل فيها دييغو مارادونا هدفه الشهير 'باليد'؟", options:["المكسيك 1986","إيطاليا 1990","إسبانيا 1982","الأرجنتين 1978"], answer:"المكسيك 1986" },
+        { q:"الرقم القياسي لأهداف كأس العالم هو 16، من سجله؟", options:["ميروسلاف كلوزه","رونالدو البرازيلي","بيليه","غيرد مولر"], answer:"ميروسلاف كلوزه" },
+        { q:"فاز ثلاثة أشخاص بكأس العالم كلاعب ومدرب. ماريو زاغالو وديدييه ديشامب ... من هو الثالث؟", options:["فرانز بيكنباور","يوهان كرويف","زيدان","بيكنهاور"], answer:"فرانز بيكنباور" },
+        { q:"فاز لاعبان إنجليزيان بالحذاء الذهبي لكأس العالم. من هؤلاء؟", options:["جاري لينيكر (1986) وهاري كين (2018)","روني وبيكهام","لامبارد وجيرارد","أوين وفاردي"], answer:"جاري لينيكر (1986) وهاري كين (2018)" }
+    ],
+    "جغرافيا": [
+        { q:"ما هي أكبر قارة في العالم من حيث المساحة؟", options:["قارة آسيا","قارة أفريقيا","قارة أمريكا الشمالية","قارة أوروبا"], answer:"قارة آسيا" },
+        { q:"ما هو أعمق محيط في العالم؟", options:["المحيط الهادي","المحيط الأطلسي","المحيط الهندي","المحيط المتجمد الشمالي"], answer:"المحيط الهادي" },
+        { q:"أي دولة عربية تقع في قارتين مختلفتين (آسيا وإفريقيا)؟", options:["جمهورية مصر العربية","المملكة العربية السعودية","الأردن","السودان"], answer:"جمهورية مصر العربية" },
+        { q:"ما هو أطول نهر في العالم؟", options:["نهر النيل","نهر الأمازون","نهر المسيسيبي","نهر اليانغتسي"], answer:"نهر النيل" },
+        { q:"ما هي أصغر دولة في العالم من حيث المساحة؟", options:["دولة الفاتيكان","موناكو","سان مارينو","ليختنشتاين"], answer:"دولة الفاتيكان" },
+        { q:"ما هو أعلى جبل في العالم؟", options:["جبل إفرست","جبل k2","جبل كانشنجونغا","جبل لوتسه"], answer:"جبل إفرست" },
+        { q:"ما هو البحر الذي يفصل بين قارتي آسيا وإفريقيا؟", options:["البحر الأحمر","البحر المتوسط","البحر العربي","البحر الأسود"], answer:"البحر الأحمر" }
+    ],
+    "معلومات تاريخية": [
+        { q:"أين تقع الحدائق المعلقة، إحدى عجائب الدنيا السبع؟", options:["في بابل، العراق","في روما، إيطاليا","في أثينا، اليونان","في الإسكندرية، مصر"], answer:"في بابل، العراق" },
+        { q:"من هم أشهر الفلاسفة في اليونان القديمة؟", options:["سقراط، أفلاطون، وأرسطو","هيرودوت وثيوسيدوس","هوميروس وإسخيلوس","ديموقريطس وإبيقور"], answer:"سقراط، أفلاطون، وأرسطو" },
+        { q:"ما هي المدينة التي دمرها بركان فيزوف عام 79 ميلادياً؟", options:["مدينة بومبي","مدينة روما","مدينة نابولي","مدينة ميلانو"], answer:"مدينة بومبي" },
+        { q:"مَن مِن قادة روما عبر نهر روبيكون معلناً الحرب الأهلية؟", options:["يوليوس قيصر","أوغسطس","بومبيوس","مارك أنتوني"], answer:"يوليوس قيصر" },
+        { q:"من هي آخر ملكات البطالمة في مصر؟", options:["كليوباترا السابعة","نفرتيتي","حتشبسوت","أرسينوي"], answer:"كليوباترا السابعة" },
+        { q:"في عهد أي إمبراطور تم تقسيم الإمبراطورية الرومانية؟", options:["الإمبراطور ثيودوسيوس","الإمبراطور نيرون","الإمبراطور ديوكلسيان","الإمبراطور قسطنطين"], answer:"الإمبراطور ثيودوسيوس" },
+        { q:"ما هي أقدم مكتبة عامة أثرية في العالم القديم؟", options:["مكتبة آشوربانيبال","مكتبة الإسكندرية","مكتبة برغامون","مكتبة أثينا"], answer:"مكتبة آشوربانيبال" },
+        { q:"أين تقع مدينة قرطاج التاريخية؟", options:["في تونس","في الجزائر","في ليبيا","في المغرب"], answer:"في تونس" }
+    ],
+    "ضربة حظ": [
+        { q:"سمّع مزمور: اللهم تراءف عليَّ يا الله كعظيم رحمتك. 🙏" },
+        { q:"قل أسماء 5 شخصيات كتابية في 10 ثوانٍ. ⏱️" },
+        { q:"اعمل تمثال لمدة 15 ثانية. 🗿" },
+        { q:"اتكلم كأنك مذيع نشرة أخبار لمدة دقيقة. 🎙️" },
+        { q:"قول آية تحفظها من غير ما تتردد. 📖" },
+        { q:"امشِ كأنك روبوت حتى نهاية الجولة. 🤖" },
+        { q:"اعمل صوت ديك 3 مرات. 🐓" },
+        { q:"قل أسماء 5 أسفار من الكتاب المقدس بسرعة. 📚" },
+        { q:"اتكلم بالفصحى للسؤال القادم. 📜" },
+        { q:"قلد شخصية كتابية والباقي يخمنها. 🎭" },
+        { q:"ردد وراء المجموعة: 'أنا عبقري بس الحظ مش معايا' 3 مرات. 😂" },
+        { q:"قف على رجل واحدة لمدة 20 ثانية. 🤸" },
+        { q:"اعمل ابتسامه عريضة حتى نهاية السؤال التالي. 😁" },
+        { q:"صفّق 10 مرات بإيقاع منتظم. 👏" },
+        { q:"اتكلم بصوت منخفض جدًا لمدة سؤال كامل. 🤫" }
+    ],
+    "الينور": [
+        {
+            q: 'كلم الرب موسى قائلًا كلم كل جماعة بني إسرائيل وقل لهم تكونون _____ لأني _____ الرب إلهكم',
+            blanks: ["قديسين", "قدوس"],
+            hint: "الكلمتان: قديسين / قدوس",
+            type: "fill"
+        },
+        {
+            q: 'من أهم ما يشير للثالوث في العهد القديم — اختر الإجابة الصحيحة:',
+            options: [
+                "خلق الإنسان — استخدام الله ضمير جمع في بعض الآيات — بلبل السنة الناس عند برج بابل",
+                "المعجزات فقط",
+                "الأنبياء فقط",
+                "الوصايا العشر"
+            ],
+            answer: "خلق الإنسان — استخدام الله ضمير جمع في بعض الآيات — بلبل السنة الناس عند برج بابل"
+        },
+        {
+            q: 'روح الرب عليّ لأن الرب مسحني البشر المساكين ... البشر بسنه مقبوله ... من قرأ هذا الجزء بالهيكل إلى هذه الآية فقط؟',
+            options: ["إشعياء النبي", "السيد المسيح", "موسى", "داود النبي"],
+            answer: "السيد المسيح"
+        },
+        {
+            q: 'روح السيد الرب عليّ لأن الرب مسحني لأبشر المساكين أرسلني لأعصب منكسري القلب لأنادي للمسبيين بالعتق وللمأسورين بالاطلاق — ما هو الحل؟',
+            options: ["السيد المسيح","يوحنا المعمدان","إلياء النبي","بطرس الرسول"],
+            answer: "السيد المسيح"
+        },
+        {
+            q: 'من نبوات العهد الدالة على ألوهية السيد المسيح ويقال في الجمعة العظيمة: (كرسيك يا الله — قال الرب لربي) — اختر الصحيح:',
+            options: ["كرسيك يا الله","قال الرب لربي","الاثنين صح","لا شيء من ذلك"],
+            answer: "كرسيك يا الله"
+        },
+        {
+            q: 'أعلنت الملائكة ألوهية السيد المسيح في أي من هذه المواقف؟',
+            options: ["الحديث مع المريمات يوم القيامة","إخراج الشياطين إلى الخنازير","إقامة لعازر","تحويل الماء إلى خمر"],
+            answer: "الحديث مع المريمات يوم القيامة"
+        },
+        {
+            q: 'هذا هو ابني الحبيب الذي به سررت — هذا القول هو:',
+            options: ["شهادة الآب للمسيح","شهادة الروح القدس للمسيح","شهادة الجموع للمسيح","شهادة الملائكة للمسيح"],
+            answer: "شهادة الآب للمسيح"
+        },
+        {
+            q: 'يا معلم أنت ابن الله — من القائل؟',
+            options: ["نثنائيل","يوحنا","مرقس","لوقا"],
+            answer: "نثنائيل"
+        },
+        {
+            q: 'أنا قد رأيت وشهدت أن هذا هو ابن الله — من القائل؟',
+            options: ["يوحنا المعمدان","يوحنا الحبيب","متى","لوقا"],
+            answer: "يوحنا المعمدان"
+        },
+        {
+            q: 'ها أنا أنظر السموات مفتوحة وابن الإنسان قائماً عن يمين الله — من القائل؟',
+            options: ["اسطفانوس","يوحنا","متى","مرقس"],
+            answer: "اسطفانوس"
+        },
+        {
+            q: 'قال الرب لربي اجلس عن يميني حتى تضع أعدائك موطئاً لقدميك — اليمين يشير إلى؟',
+            options: ["القوة والمجد","مكان جغرافي","زمان محدد","لا شيء من ذلك"],
+            answer: "القوة والمجد"
+        },
+        {
+            q: 'لأنه يولد لنا ولد ونعطى ابناً — ذكرت هذه النبوة بسفر؟',
+            options: ["سفر إشعياء","سفر المزامير","سفر التثنية","سفر الأمثال"],
+            answer: "سفر إشعياء"
+        },
+        {
+            q: 'أيها الأب مجد اسمك فجاء صوت من السماء مجدت وأمجد أيضاً — في أي إنجيل؟',
+            options: ["إنجيل يوحنا","إنجيل مرقس","إنجيل لوقا","إنجيل متى"],
+            answer: "إنجيل يوحنا"
+        },
+        {
+            q: 'أيها الرب العارف قلوب الجميع — صلت الكنيسة الأولى للسيد المسيح — في أي سفر؟',
+            options: ["سفر أعمال الرسل","إنجيل يوحنا","إنجيل مرقس","رسالة كورنثوس الأولى"],
+            answer: "سفر أعمال الرسل"
+        }
+    ]
+};
+
+// ===== رسم العجلة =====
+function getTotalRemaining() {
+    return activeCategories.reduce((s, cat) => s + (quizBank[cat] ? quizBank[cat].length : 0), 0);
+}
+
+function updateStatsBar(selectedCat) {
+    document.getElementById('totalRemaining').textContent = getTotalRemaining();
+    if (selectedCat && quizBank[selectedCat]) {
+        document.getElementById('catRemaining').textContent = quizBank[selectedCat].length;
+    } else {
+        document.getElementById('catRemaining').textContent = '-';
+    }
+}
+
+function drawWheel() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const n = activeCategories.length;
+    if (n === 0) {
+        ctx.fillStyle = '#555';
+        const cx=canvas.width/2, cy=canvas.height/2, r=canvas.width/2;
+        ctx.beginPath(); ctx.arc(cx,cy,r,0,2*Math.PI); ctx.fill();
+        ctx.fillStyle='#fff'; ctx.font='bold 22px Segoe UI'; ctx.textAlign='center';
+        ctx.fillText('انتهت الأسئلة!',cx,cy+8);
+        return;
+    }
+    const seg = (2*Math.PI)/n;
+    const offset = -Math.PI/2; // نبدأ من الأعلى (12 o'clock)
+    for (let i=0; i<n; i++) {
+        const startAngle = offset + i*seg;
+        const endAngle   = offset + (i+1)*seg;
+        // رسم القطاع
+        const CX=canvas.width/2, CY=canvas.height/2, R=canvas.width/2-3;
+        ctx.beginPath();
+        ctx.fillStyle = activeColors[i];
+        ctx.moveTo(CX,CY);
+        ctx.arc(CX,CY,R, startAngle, endAngle);
+        ctx.lineTo(CX,CY); ctx.fill();
+        // خط فاصل
+        ctx.beginPath(); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=1;
+        ctx.moveTo(CX,CY);
+        ctx.arc(CX,CY,R, startAngle, endAngle);
+        ctx.lineTo(CX,CY); ctx.stroke();
+        // نص
+        ctx.save();
+        ctx.translate(CX,CY);
+        ctx.rotate(startAngle + seg/2);
+        ctx.fillStyle="#fff";
+        ctx.font="bold 13px Segoe UI";
+        ctx.textAlign="right";
+        ctx.shadowColor="rgba(0,0,0,0.7)"; ctx.shadowBlur=4;
+        ctx.fillText(activeCategories[i], R-10, 5);
+        ctx.restore();
+    }
+}
+drawWheel();
+updateStatsBar(null);
+
+// ===== صوت العجلة =====
+function playSpinSound() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const dur = 4.0;
+        const start = audioCtx.currentTime;
+        for (let i=0; i<32; i++) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            const t = i/31;
+            // يتسارع للنص ثم يتباطأ — easing
+            const clickTime = start + dur * (t < 0.5
+                ? 2*t*t*0.45
+                : (1 - Math.pow(-2*t+2,2)/2));
+            osc.frequency.value = 500 + Math.random()*300;
+            osc.type = "triangle";
+            gain.gain.setValueAtTime(0.15, clickTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, clickTime+0.07);
+            osc.start(clickTime); osc.stop(clickTime+0.08);
+        }
+    } catch(e) {}
+}
+
+function playTone(freq, dur) {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.frequency.value = freq; osc.type = "sine"; osc.start();
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+        osc.stop(audioCtx.currentTime + dur);
+    } catch(e) {}
+}
+
+// ===== لف العجلة — حساب الفائز صح =====
+function spinWheel() {
+    if (activeCategories.length === 0) return;
+    const btn = document.getElementById("spinBtn");
+    btn.disabled = true;
+    playSpinSound();
+
+    const n = activeCategories.length;
+    const segDeg = 360 / n;
+
+    // عدد لفات كاملة (5-9) + زاوية عشوائية
+    const extraSpins = (5 + Math.floor(Math.random() * 5)) * 360;
+    const randomDeg  = Math.random() * 360;
+    const addedDeg   = extraSpins + randomDeg;
+
+    totalDegrees += addedDeg;
+
+    canvas.style.transition = 'transform 4s cubic-bezier(0.1, 0.8, 0.1, 1)';
+    canvas.style.transform  = `rotate(${totalDegrees}deg)`;
+
+    setTimeout(() => {
+        // المؤشر في الأعلى (270° من الصفر) = الزاوية التي يشير إليها
+        // العجلة دارت totalDegrees — نحسب أي قطاع تحت المؤشر
+        const finalAngle = totalDegrees % 360;          // الزاوية الإجمالية mod 360
+        // القطاعات بتبدأ من الأعلى (12 o'clock)
+        // المؤشر ثابت فوق — نحسب أي قطاع وصل للأعلى بعد اللفة
+        const pointerOnWheel = (360 - finalAngle % 360) % 360;
+        const winningIndex   = Math.floor(pointerOnWheel / segDeg) % n;
+
+        openQuiz(activeCategories[winningIndex]);
+        btn.disabled = false;
+    }, 4100);
+}
+
+// ===== فتح السؤال =====
+let currentCategory = null;
+
+function openQuiz(category) {
+    currentCategory = category;
+    const modal       = document.getElementById("quizModal");
+    const catTitle    = document.getElementById("modalCategory");
+    const qText       = document.getElementById("modalQuestion");
+    const optionsBox  = document.getElementById("modalOptions");
+    const feedback    = document.getElementById("modalFeedback");
+    const nextBtn     = document.getElementById("nextBtn");
+    const catRemModal = document.getElementById("catRemainingModal");
+
+    catTitle.innerText = `القسم المختار: ${category}`;
+    feedback.innerText = "";
+    optionsBox.innerHTML = "";
+    nextBtn.style.display = "none";
+    nextBtn.onclick = closeModal;
+    catRemModal.innerText = "";
+
+    updateStatsBar(category);
+
+    const questions = quizBank[category];
+    if (!questions || questions.length === 0) {
+        qText.innerHTML = `<span class="empty-category-msg">خلصت أسئلة قسم "${category}"! 🎉<br>سيُزال من العجلة.</span>`;
+        nextBtn.style.display = "block";
+        nextBtn.onclick = () => { removeCategory(category); closeModal(); };
+        modal.style.display = "flex";
+        return;
+    }
+
+    const ri = Math.floor(Math.random() * questions.length);
+    const qObj = questions[ri];
+
+    catRemModal.innerText = `أسئلة متبقية في القسم: ${questions.length}`;
+    qText.innerText = qObj.q;
+
+    if (category === "ضربة حظ") {
+        feedback.innerText = "نفذ التحدي واضغط عودة! 🎯";
+        feedback.style.color = "#00fff0";
+        quizBank[category].splice(ri, 1);
+        nextBtn.style.display = "block";
+
+    } else if (qObj.type === "fill") {
+        // سؤال ملء الفراغات (الينور)
+        const inp = document.createElement('input');
+        inp.type = 'text'; inp.className = 'fill-input';
+        inp.placeholder = 'اكتب الكلمتين المفقودتين...';
+        const checkBtn = document.createElement('button');
+        checkBtn.className = 'check-btn'; checkBtn.innerText = 'تحقق ✔';
+        checkBtn.onclick = () => {
+            const val = inp.value.trim();
+            const correct = qObj.blanks.every(b => val.includes(b));
+            if (correct) {
+                feedback.innerText = "إجابة صحيحة! 🎉";
+                feedback.style.color = "#21bf73";
+                playTone(523,0.4);
+                if (activeTeam !== null) { scores[activeTeam]++; renderScoreboard(); }
+            } else {
+                feedback.innerText = `إجابة خاطئة! الإجابة: ${qObj.blanks.join(' / ')} ❌`;
+                feedback.style.color = "#ff4b5c";
+                playTone(150,0.5);
+            }
+            quizBank[category].splice(ri, 1);
+            updateStatsBar(category);
+            catRemModal.innerText = `أسئلة متبقية في القسم: ${quizBank[category].length}`;
+            inp.disabled = true; checkBtn.disabled = true;
+            nextBtn.style.display = "block";
+        };
+        optionsBox.appendChild(inp);
+        optionsBox.appendChild(checkBtn);
+
+    } else {
+        // سؤال اختيار متعدد
+        qObj.options.forEach(opt => {
+            const b = document.createElement("button");
+            b.className = "option-btn"; b.innerText = opt;
+            b.onclick = () => checkAnswer(b, opt, qObj.answer, category, ri);
+            optionsBox.appendChild(b);
+        });
+    }
+
+    modal.style.display = "flex";
+}
+
+// ===== تحقق MCQ =====
+function checkAnswer(selectedBtn, selected, correct, category, ri) {
+    document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
+    const feedback = document.getElementById("modalFeedback");
+    const nextBtn  = document.getElementById("nextBtn");
+
+    quizBank[category].splice(ri, 1);
+    updateStatsBar(category);
+    document.getElementById("catRemainingModal").innerText = `أسئلة متبقية في القسم: ${quizBank[category].length}`;
+
+    if (selected === correct) {
+        selectedBtn.classList.add("correct");
+        feedback.innerText = "إجابة صحيحة! برافو 🥳🎉";
+        feedback.style.color = "#21bf73";
+        playTone(523,0.4);
+        scores[activeTeam]++;
+        saveScores();
+        renderScoreboard();
+    } else {
+        selectedBtn.classList.add("wrong");
+        feedback.innerText = "إجابة خاطئة! ❌";
+        feedback.style.color = "#ff4b5c";
+        playTone(150,0.5);
+        document.querySelectorAll(".option-btn").forEach(b => {
+            if (b.innerText === correct) b.classList.add("correct");
+        });
+    }
+    nextBtn.style.display = "block";
+}
+
+// ===== إغلاق =====
+function closeModal() {
+    document.getElementById("quizModal").style.display = "none";
+    if (currentCategory && quizBank[currentCategory] && quizBank[currentCategory].length === 0) {
+        removeCategory(currentCategory);
+    }
+    updateStatsBar(null);
+}
+
+// ===== إزالة قسم =====
+function removeCategory(category) {
+    const idx = activeCategories.indexOf(category);
+    if (idx !== -1) { activeCategories.splice(idx,1); activeColors.splice(idx,1); }
+    canvas.style.transition = 'none';
+    canvas.style.transform  = `rotate(${totalDegrees}deg)`;
+    drawWheel();
+    updateStatsBar(null);
+}
+</script>
+</body>
+</html>

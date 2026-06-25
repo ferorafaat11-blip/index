@@ -30,8 +30,8 @@
             margin-bottom: 4px;
         }
         .logo-container img { 
-            width: 400px; 
-            height: 400px; 
+            width: 500px; 
+            height: 500px; 
             object-fit: contain; 
         }
 
@@ -308,7 +308,7 @@ function renderScoreboard() {
 
 function changeScore(i, delta, event) {
     event.stopPropagation();
-    scores[i] = Math.max(0, scores[i] + delta);
+    scores[i] = scores[i] + delta;  // من غير Math.max(0, ...) عشان النقاط تنزل تحت الصفر
     saveScores();
     renderScoreboard();
 }

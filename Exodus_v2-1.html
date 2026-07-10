@@ -19,25 +19,24 @@
             min-height: 100vh;
         }
 
-        /* LOGO */
         .logo-container { 
             line-height: 0; 
             overflow: hidden; 
-            height: 150px; 
+            height: 180px; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            margin-bottom: 4px;
+            margin-bottom: 0;
         }
         .logo-container img { 
-            width: 400px; 
-            height: 400px; 
-            object-fit: contain; 
+            width: 520px; 
+            height: 520px; 
+            object-fit: contain;
+            margin: -70px auto;
         }
 
         h1 { color: #00fff0; text-shadow: 0 0 10px rgba(0,255,240,0.5); margin: 4px 0; font-size: 22px; }
 
-        /* ===== STATS BAR ===== */
         .stats-bar {
             display: flex; gap: 12px; margin-bottom: 6px;
             font-size: 13px; color: #ccc;
@@ -46,7 +45,6 @@
         .stats-bar span { background: rgba(255,255,255,0.07); border-radius: 8px; padding: 3px 12px; }
         .stats-bar .highlight { color: #00fff0; font-weight: bold; }
 
-        /* ===== MAIN LAYOUT ===== */
         .main-layout {
             display: flex;
             align-items: center;
@@ -57,7 +55,6 @@
             padding: 0 10px;
         }
 
-        /* ===== SCORE SIDE PANELS ===== */
         .score-side {
             display: flex;
             flex-direction: column;
@@ -81,7 +78,6 @@
         .score-side-score { font-size: 42px; font-weight: 900; line-height: 1; margin-bottom: 6px; }
         .score-side-btns { display: flex; gap: 6px; justify-content: center; }
 
-        /* ===== WHEEL CENTER ===== */
         .wheel-center {
             display: flex;
             flex-direction: column;
@@ -106,7 +102,6 @@
         }
         canvas { border-radius: 50%; box-shadow: 0 0 20px rgba(0,0,0,0.6), 0 0 40px rgba(0,255,240,0.2); }
 
-        /* ===== BUTTONS ===== */
         .spin-btn {
             background: linear-gradient(45deg, #00fff0, #0081ff);
             border: none; color: #1a1a2e;
@@ -128,7 +123,6 @@
         }
         .reset-btn:hover { background: rgba(255,80,80,0.25); }
 
-        /* ===== MODAL ===== */
         .modal {
             display: none; position: fixed;
             top:0; left:0; width:100%; height:100%;
@@ -189,7 +183,6 @@
         }
         .check-btn:hover { transform:scale(1.04); }
 
-        /* Mobile: hide side panels */
         @media (max-width: 750px) {
             .score-side { display: none; }
             .main-layout { padding: 0 5px; }
@@ -201,24 +194,20 @@
 </head>
 <body>
 
+<!-- ===== ضع اللوجو هنا ===== -->
 <div class="logo-container">
-    <img id="logoImg" src="https://i.postimg.cc/7CTB2tRw/logo-exodus-png-w.png" alt="Logo" />
+    <!-- حط هنا كود اللوجو بتاعك -->
 </div>
+
 <h1>🎮 مسابقة عجلة الحظ 🎮</h1>
 
-<!-- SCOREBOARD (TOP) REMOVED -->
-
 <div class="stats-bar">
-    <span>إجمالي الأسئلة المتبقية: <span class="highlight" id="totalRemaining">-</span></span>
-    <span>أسئلة القسم: <span class="highlight" id="catRemaining">-</span></span>
+    <span>متبقي: <span class="highlight" id="totalRemaining">-</span></span>
 </div>
 
-<!-- MAIN LAYOUT -->
 <div class="main-layout">
-    <!-- Left scores -->
     <div class="score-side" id="scoreSideLeft"></div>
 
-    <!-- Wheel center -->
     <div class="wheel-center">
         <div class="wheel-container">
             <div class="pointer"></div>
@@ -228,11 +217,9 @@
         <button class="reset-btn" onclick="resetGame()">🔄 إعادة تعيين اللعبة</button>
     </div>
 
-    <!-- Right scores -->
     <div class="score-side" id="scoreSideRight"></div>
 </div>
 
-<!-- MODAL -->
 <div id="quizModal" class="modal">
     <div class="modal-content">
         <div id="modalCategory" class="category-title"></div>
@@ -245,10 +232,6 @@
 </div>
 
 <script>
-// ===== لوجو =====
-// تم وضع الرابط المباشر للصورة في وسم <img>
-
-// ===== فرق وسكور =====
 const teamNames = ["Hachi", "خد منديل", "الحريفة", "متسألنيش عامتا"];
 const teamColors = ["#ff007f","#0abf53","#ff9f1c","#00fff0"];
 const scores = [0, 0, 0, 0];
@@ -285,9 +268,6 @@ function makeTeamCard(i, cls, nameClass, scoreClass, btnsClass) {
 }
 
 function renderScoreboard() {
-    // Top scoreboard (mobile) - REMOVED
-
-    // Left side panel (teams 0,1)
     const sbLeft = document.getElementById('scoreSideLeft');
     if (sbLeft) {
         sbLeft.innerHTML = '';
@@ -296,7 +276,6 @@ function renderScoreboard() {
         });
     }
 
-    // Right side panel (teams 2,3)
     const sbRight = document.getElementById('scoreSideRight');
     if (sbRight) {
         sbRight.innerHTML = '';
@@ -308,7 +287,7 @@ function renderScoreboard() {
 
 function changeScore(i, delta, event) {
     event.stopPropagation();
-    scores[i] = Math.max(0, scores[i] + delta);
+    scores[i] = scores[i] + delta;
     saveScores();
     renderScoreboard();
 }
@@ -322,169 +301,124 @@ function resetGame() {
 loadScores();
 renderScoreboard();
 
-// ===== العجلة =====
-const CATEGORIES = ["رياضي", "know yourself", "جغرافيا", "معلومات تاريخية", "ضربة حظ", "الينور"];
+const CATEGORIES = ["الكتاب المقدس", "كورة", "جغرافيا", "تاريخ", "ثقافة عامة", "ضربة حظ"];
 const COLORS     = ["#ff007f", "#711c91", "#0abf53", "#ff9f1c", "#00fff0", "#e63946"];
 
 let activeCategories = [...CATEGORIES];
 let activeColors     = [...COLORS];
-
-// الزاوية الحقيقية المتراكمة (بالدرجات) — نستخدم درجات لتجنب الـ floating point drift
 let totalDegrees = 0;
 
 const canvas = document.getElementById("wheel");
 const ctx    = canvas.getContext("2d");
 let timerInterval = null;
 
-// ===== بنك الأسئلة =====
 const quizBank = {
-    "know yourself": [
-        { q:"المشاعر هي:", options:["أفكار منطقية عن الموقف","استجابات جسدية ونفسية نمر بها تجاه موقف أو شخص","قرارات نتخذها بإرادتنا","حقائق علمية"], answer:"استجابات جسدية ونفسية نمر بها تجاه موقف أو شخص" },
-        { q:"الفرق الأساسي بين 'الفكرة' و 'الشعور' إن:", options:["الاثنين نفس الشيء","الفكرة في الرأس، والشعور في الجسم","الشعور دايمًا صح والفكرة دايمًا غلط","الفكرة تأخذ وقت والشعور لا"], answer:"الفكرة في الرأس، والشعور في الجسم" },
-        { q:"من المشاعر الأساسية الـ 6 حسب علم النفس:", options:["الملل - الفضول - الندم","الفرح - الحزن - الغضب - الخوف - الاشمئزاز - المفاجأة","الثقة - الغيرة - الطمع","الحماس - التوتر - الكسل"], answer:"الفرح - الحزن - الغضب - الخوف - الاشمئزاز - المفاجأة" },
-        { q:"أي من التالي يعتبر شعور إيجابي؟", options:["القلق","الامتنان","الإحباط","الرفض"], answer:"الامتنان" },
-        { q:"المشاعر بتأثر على سلوكنا إزاي؟", options:["مش بتأثر خالص","بتخلينا نتصرف بدون ما نفكر في النتائج","بتحدد طريقة كلامنا وقراراتنا وردود أفعالنا","بتوقف تفكيرنا تمامًا"], answer:"بتحدد طريقة كلامنا وقراراتنا وردود أفعالنا" }
+    "الكتاب المقدس": [
+        { q:"من هو التلميذ الذي شك في قيامة المسيح حتى لمس جراحه؟", options:["توما","بطرس","يوحنا","يعقوب"], answer:"توما" },
+        { q:"كم عدد أسفار الإنجيل في العهد الجديد؟", options:["4","5","3","6"], answer:"4" },
+        { q:"من هو كاتب إنجيل مرقس؟", options:["مرقس البشير","لوقا","متى","يوحنا"], answer:"مرقس البشير" },
+        { q:"في أي مدينة صُلب المسيح؟", options:["القدس","بيت لحم","الناصرة","أريحا"], answer:"القدس" },
+        { q:"من هو أول شهيد في المسيحية؟", options:["استفانوس","بطرس","بولس","يعقوب"], answer:"استفانوس" },
+        { q:"ما هو اسم أم المسيح؟", options:["مريم","أليصابات","حنة","رفقة"], answer:"مريم" },
+        { q:"كم كان عدد تلاميذ المسيح؟", options:["12","10","7","14"], answer:"12" },
+        { q:"من هو كاتب سفر أعمال الرسل؟", options:["لوقا","متى","مرقس","يوحنا"], answer:"لوقا" },
+        { q:"أين وُلِد المسيح حسب الإنجيل؟", options:["بيت لحم","القدس","الناصرة","الجليل"], answer:"بيت لحم" },
+        { q:"من هو يوحنا المعمدان بالنسبة للمسيح؟", options:["ابن خالته","أخوه","عمه","تلميذه"], answer:"ابن خالته" },
+        { q:"كم عدد أسفار العهد القديم في الكتاب المقدس؟", options:["39","27","66","50"], answer:"39" },
+        { q:"من هو أول إنسان خلقه الله؟", options:["آدم","إبراهيم","نوح","موسى"], answer:"آدم" },
+        { q:"ما هي المعجزة الأولى التي صنعها المسيح؟", options:["تحويل الماء إلى خمر","إشباع الجموع","إقامة لعازر","شفاء الأعمى"], answer:"تحويل الماء إلى خمر" },
+        { q:"من هو رئيس الكهنة الذي حكم على المسيح؟", options:["قيافا","حنان","كيفا","باراباس"], answer:"قيافا" },
+        { q:"كم يوماً صام المسيح في البرية؟", options:["40","30","20","50"], answer:"40" }
     ],
-    "رياضي": [
-        { q:"كانت هناك بطولتان لكأس العالم. ما اسم البطولة الأولى؟", options:["كأس جول ريميه / النصر","كأس الفيفا","كأس العالم الأولى","كأس القارات"], answer:"كأس جول ريميه / النصر" },
-        { q:"أي بلد فاز بأول كأس عالم في عام 1930؟", options:["أوروجواي","البرازيل","الأرجنتين","إيطاليا"], answer:"أوروجواي" },
-        { q:"أي بلد فاز بأكبر عدد من بطولات كأس العالم؟", options:["البرازيل","ألمانيا","إيطاليا","الأرجنتين"], answer:"البرازيل" },
-        { q:"فازت ثلاث دول بالمونديال مرتين. يمكنك تسميتهم؟", options:["الأرجنتين وفرنسا وأوروغواي","إيطاليا وألمانيا وفرنسا","البرازيل وإسبانيا وفرنسا","المكسيك وإنجلترا وهولندا"], answer:"الأرجنتين وفرنسا وأوروغواي" },
-        { q:"أي بلد شارك في ثلاث نهائيات لكأس العالم، لكنه لم يفز أبداً بالمنافسة؟", options:["هولندا","البرتغال","بولندا","كرواتيا"], answer:"هولندا" },
-        { q:"سيتم استضافة كأس العالم 2026 في ثلاث دول مختلفة. يمكنك تسميتهم؟", options:["الولايات المتحدة وكندا والمكسيك","الولايات المتحدة والمكسيك والبرازيل","كندا والمكسيك والأرجنتين","الولايات المتحدة وكندا وكولومبيا"], answer:"الولايات المتحدة وكندا والمكسيك" },
-        { q:"في أي بطولة كأس عالم سجل فيها دييغو مارادونا هدفه الشهير 'باليد'؟", options:["المكسيك 1986","إيطاليا 1990","إسبانيا 1982","الأرجنتين 1978"], answer:"المكسيك 1986" },
-        { q:"الرقم القياسي لأهداف كأس العالم هو 16، من سجله؟", options:["ميروسلاف كلوزه","رونالدو البرازيلي","بيليه","غيرد مولر"], answer:"ميروسلاف كلوزه" },
-        { q:"فاز ثلاثة أشخاص بكأس العالم كلاعب ومدرب. ماريو زاغالو وديدييه ديشامب ... من هو الثالث؟", options:["فرانز بيكنباور","يوهان كرويف","زيدان","بيكنهاور"], answer:"فرانز بيكنباور" },
-        { q:"فاز لاعبان إنجليزيان بالحذاء الذهبي لكأس العالم. من هؤلاء؟", options:["جاري لينيكر (1986) وهاري كين (2018)","روني وبيكهام","لامبارد وجيرارد","أوين وفاردي"], answer:"جاري لينيكر (1986) وهاري كين (2018)" }
+    "كورة": [
+        { q:"ما هو النادي الأكثر تتويجاً بلقب الدوري المصري الممتاز؟", options:["الأهلي","الزمالك","الإسماعيلي","المصري"], answer:"الأهلي" },
+        { q:"من هو الهداف التاريخي لبطولة الدوري المصري الممتاز؟", options:["حسن الشاذلي","محمود الخطيب","حسام حسن","أحمد راضي"], answer:"حسن الشاذلي" },
+        { q:"من هو اللاعب المصري الوحيد الفائز بالكرة الذهبية الأفريقية؟", options:["محمود الخطيب","محمد صلاح","حسام حسن","أحمد حسن"], answer:"محمود الخطيب" },
+        { q:"كم مرة فاز الأهلي بدوري أبطال أفريقيا؟", options:["12","10","8","15"], answer:"12" },
+        { q:"من هو اللاعب الأكثر تتويجاً بدوري أبطال أوروبا؟", options:["رونالدو","ميسي","مالديني","راموس"], answer:"رونالدو" },
+        { q:"ما هو النادي الإنجليزي صاحب أكبر عدد من بطولات الدوري؟", options:["مانشستر يونايتد","ليفربول","آرسنال","تشيلسي"], answer:"مانشستر يونايتد" },
+        { q:"من هو الفائز بجائزة أفضل لاعب في العالم 2024؟", options:["فينيسيوس جونيور","رودري","بيلينجهام","مبابي"], answer:"فينيسيوس جونيور" },
+        { q:"ما هو النادي الإسباني صاحب أكبر عدد من بطولات الدوري؟", options:["ريال مدريد","برشلونة","أتلتيكو مدريد","فالنسيا"], answer:"ريال مدريد" },
+        { q:"من هو هداف كأس العالم 2022؟", options:["مبابي","ميسي","رونالدو","جيرو"], answer:"مبابي" },
+        { q:"كم مرة فاز منتخب مصر بكأس الأمم الأفريقية؟", options:["7","5","3","8"], answer:"7" },
+        { q:"من هو أول لاعب مصري يحترف في الدوري الإنجليزي؟", options:["ميدو","محمد صلاح","أحمد حسام","محمد النني"], answer:"ميدو" },
+        { q:"ما هو النادي الإيطالي صاحب أكبر عدد من بطولات الدوري؟", options:["يوفنتوس","ميلان","إنتر","روما"], answer:"يوفنتوس" }
     ],
     "جغرافيا": [
-        { q:"ما هي أكبر قارة في العالم من حيث المساحة؟", options:["قارة آسيا","قارة أفريقيا","قارة أمريكا الشمالية","قارة أوروبا"], answer:"قارة آسيا" },
-        { q:"ما هو أعمق محيط في العالم؟", options:["المحيط الهادي","المحيط الأطلسي","المحيط الهندي","المحيط المتجمد الشمالي"], answer:"المحيط الهادي" },
-        { q:"أي دولة عربية تقع في قارتين مختلفتين (آسيا وإفريقيا)؟", options:["جمهورية مصر العربية","المملكة العربية السعودية","الأردن","السودان"], answer:"جمهورية مصر العربية" },
-        { q:"ما هو أطول نهر في العالم؟", options:["نهر النيل","نهر الأمازون","نهر المسيسيبي","نهر اليانغتسي"], answer:"نهر النيل" },
-        { q:"ما هي أصغر دولة في العالم من حيث المساحة؟", options:["دولة الفاتيكان","موناكو","سان مارينو","ليختنشتاين"], answer:"دولة الفاتيكان" },
-        { q:"ما هو أعلى جبل في العالم؟", options:["جبل إفرست","جبل k2","جبل كانشنجونغا","جبل لوتسه"], answer:"جبل إفرست" },
-        { q:"ما هو البحر الذي يفصل بين قارتي آسيا وإفريقيا؟", options:["البحر الأحمر","البحر المتوسط","البحر العربي","البحر الأسود"], answer:"البحر الأحمر" }
+        { q:"ما هي أكبر قارة في العالم من حيث المساحة؟", options:["آسيا","أفريقيا","أمريكا الشمالية","أوروبا"], answer:"آسيا" },
+        { q:"ما هو أطول نهر في العالم؟", options:["النيل","الأمازون","المسيسيبي","اليانغتسي"], answer:"النيل" },
+        { q:"ما هي أعلى قمة جبلية في العالم؟", options:["إيفرست","K2","كانشنجونغا","لوتسه"], answer:"إيفرست" },
+        { q:"ما هي أكبر دولة عربية من حيث المساحة؟", options:["الجزائر","السعودية","السودان","ليبيا"], answer:"الجزائر" },
+        { q:"ما هي عاصمة مصر؟", options:["القاهرة","الإسكندرية","الجيزة","أسوان"], answer:"القاهرة" },
+        { q:"ما هي القناة التي تربط البحر الأحمر بالبحر المتوسط؟", options:["السويس","بنما","كيل","كورنث"], answer:"السويس" },
+        { q:"ما هي أصغر دولة في العالم من حيث المساحة؟", options:["الفاتيكان","موناكو","سان مارينو","ليختنشتاين"], answer:"الفاتيكان" },
+        { q:"في أي قارة تقع مصر؟", options:["أفريقيا","آسيا","أوروبا","أمريكا"], answer:"أفريقيا" },
+        { q:"ما هي عاصمة أستراليا؟", options:["كانبرا","سيدني","ملبورن","بريسبان"], answer:"كانبرا" },
+        { q:"ما هو أكبر بحر في العالم؟", options:["بحر العرب","البحر المتوسط","بحر الصين الجنوبي","بحر الكاريبي"], answer:"بحر العرب" },
+        { q:"ما هي أكبر صحراء في العالم؟", options:["الصحراء الكبرى","صحراء الربع الخالي","صحراء كالاهاري","صحراء جوبي"], answer:"الصحراء الكبرى" },
+        { q:"ما هي أطول سلسلة جبال في العالم؟", options:["جبال الأنديز","جبال الهيمالايا","جبال الروكي","جبال الألب"], answer:"جبال الأنديز" },
+        { q:"ما هي عاصمة البرازيل؟", options:["برازيليا","ريو دي جانيرو","ساو باولو","بيلو هوريزونتي"], answer:"برازيليا" },
+        { q:"ما هي أكبر جزيرة في العالم؟", options:["جرينلاند","مدغشقر","بورنيو","غينيا الجديدة"], answer:"جرينلاند" },
+        { q:"ما هو أخفض نقطة على سطح الأرض؟", options:["البحر الميت","وادي الموت","بحيرة توربان","منخفض القطارة"], answer:"البحر الميت" }
     ],
-    "معلومات تاريخية": [
-        { q:"أين تقع الحدائق المعلقة، إحدى عجائب الدنيا السبع؟", options:["في بابل، العراق","في روما، إيطاليا","في أثينا، اليونان","في الإسكندرية، مصر"], answer:"في بابل، العراق" },
-        { q:"من هم أشهر الفلاسفة في اليونان القديمة؟", options:["سقراط، أفلاطون، وأرسطو","هيرودوت وثيوسيدوس","هوميروس وإسخيلوس","ديموقريطس وإبيقور"], answer:"سقراط، أفلاطون، وأرسطو" },
-        { q:"ما هي المدينة التي دمرها بركان فيزوف عام 79 ميلادياً؟", options:["مدينة بومبي","مدينة روما","مدينة نابولي","مدينة ميلانو"], answer:"مدينة بومبي" },
-        { q:"مَن مِن قادة روما عبر نهر روبيكون معلناً الحرب الأهلية؟", options:["يوليوس قيصر","أوغسطس","بومبيوس","مارك أنتوني"], answer:"يوليوس قيصر" },
-        { q:"من هي آخر ملكات البطالمة في مصر؟", options:["كليوباترا السابعة","نفرتيتي","حتشبسوت","أرسينوي"], answer:"كليوباترا السابعة" },
-        { q:"في عهد أي إمبراطور تم تقسيم الإمبراطورية الرومانية؟", options:["الإمبراطور ثيودوسيوس","الإمبراطور نيرون","الإمبراطور ديوكلسيان","الإمبراطور قسطنطين"], answer:"الإمبراطور ثيودوسيوس" },
-        { q:"ما هي أقدم مكتبة عامة أثرية في العالم القديم؟", options:["مكتبة آشوربانيبال","مكتبة الإسكندرية","مكتبة برغامون","مكتبة أثينا"], answer:"مكتبة آشوربانيبال" },
-        { q:"أين تقع مدينة قرطاج التاريخية؟", options:["في تونس","في الجزائر","في ليبيا","في المغرب"], answer:"في تونس" }
+        "تاريخ": [
+        { q:"من هو موحد مصر العليا والسفلى ومؤسس أول أسرة فرعونية؟", options:["الملك مينا","رمسيس الثاني","تحتمس الثالث","أمنحتب الثالث"], answer:"الملك مينا" },
+        { q:"من بنى الهرم الأكبر بالجيزة؟", options:["خوفو","خفرع","منقرع","زوسر"], answer:"خوفو" },
+        { q:"من هي الملكة التي حكمت مصر وارتدت زي الرجال؟", options:["حتشبسوت","نفرتيتي","كليوباترا","أرسينوي"], answer:"حتشبسوت" },
+        { q:"من هو القائد اليوناني الذي غزا مصر وأسس الإسكندرية؟", options:["الإسكندر الأكبر","يوليوس قيصر","أوغسطس","بطليموس"], answer:"الإسكندر الأكبر" },
+        { q:"من هي آخر ملكات الأسرة البطلمية في مصر؟", options:["كليوباترا السابعة","حتشبسوت","نفرتيتي","أرسينوي"], answer:"كليوباترا السابعة" },
+        { q:"في أي عام تم اكتشاف مقبرة توت عنخ آمون؟", options:["1922","1910","1930","1900"], answer:"1922" },
+        { q:"من هو مؤسس الدولة الأموية؟", options:["معاوية بن أبي سفيان","عبد الملك بن مروان","الوليد بن عبد الملك","عمر بن عبد العزيز"], answer:"معاوية بن أبي سفيان" },
+        { q:"ما هي معركة فتح الأندلس؟", options:["معركة وادي لكة","معركة بلاط الشهداء","معركة الزلاقة","معركة العقاب"], answer:"معركة وادي لكة" },
+        { q:"من هو القائد العسكري الذي حرر القدس من الصليبيين؟", options:["صلاح الدين الأيوبي","نور الدين زنكي","عماد الدين زنكي","بيبرس"], answer:"صلاح الدين الأيوبي" },
+        { q:"في أي عام سقطت الخلافة العثمانية؟", options:["1924","1918","1922","1920"], answer:"1924" },
+        { q:"ما هي معركة حطين الشهيرة؟", options:["معركة بين المسلمين والصليبيين","معركة بين العثمانيين والمماليك","معركة بين الفرس والروم","معركة بين العرب والفرس"], answer:"معركة بين المسلمين والصليبيين" },
+        { q:"من هو مؤسس الدولة العباسية؟", options:["أبو العباس السفاح","أبو جعفر المنصور","هارون الرشيد","المأمون"], answer:"أبو العباس السفاح" },
+        { q:"ما هو اسم أول مسجد بني في الإسلام؟", options:["مسجد قباء","المسجد النبوي","المسجد الحرام","مسجد الأقصى"], answer:"مسجد قباء" }
     ],
-    "ضربة حظ": [
-        { q:"سمّع مزمور: اللهم تراءف عليَّ يا الله كعظيم رحمتك. 🙏" },
-        { q:"قل أسماء 5 شخصيات كتابية في 10 ثوانٍ. ⏱️" },
-        { q:"اعمل تمثال لمدة 15 ثانية. 🗿" },
-        { q:"اتكلم كأنك مذيع نشرة أخبار لمدة دقيقة. 🎙️" },
-        { q:"قول آية تحفظها من غير ما تتردد. 📖" },
-        { q:"امشِ كأنك روبوت حتى نهاية الجولة. 🤖" },
-        { q:"اعمل صوت ديك 3 مرات. 🐓" },
-        { q:"قل أسماء 5 أسفار من الكتاب المقدس بسرعة. 📚" },
-        { q:"اتكلم بالفصحى للسؤال القادم. 📜" },
-        { q:"قلد شخصية كتابية والباقي يخمنها. 🎭" },
-        { q:"ردد وراء المجموعة: 'أنا عبقري بس الحظ مش معايا' 3 مرات. 😂" },
-        { q:"قف على رجل واحدة لمدة 20 ثانية. 🤸" },
-        { q:"اعمل ابتسامه عريضة حتى نهاية السؤال التالي. 😁" },
-        { q:"صفّق 10 مرات بإيقاع منتظم. 👏" },
-        { q:"اتكلم بصوت منخفض جدًا لمدة سؤال كامل. 🤫" }
+    "ثقافة عامة": [
+        { q:"ما هو أكبر محيط في العالم من حيث المساحة؟", options:["الهادي","الأطلسي","الهندي","المتجمد"], answer:"الهادي" },
+        { q:"ما هو خط الطول الرئيسي؟", options:["جرينتش","خط الاستواء","مدار السرطان","مدار الجدي"], answer:"جرينتش" },
+        { q:"كم عدد ألوان قوس قزح الأساسية؟", options:["7","6","8","5"], answer:"7" },
+        { q:"من هو أول رائد فضاء صعد للقمر؟", options:["نيل أرمسترونج","باز ألدرن","مايكل كولينز","يوري جاجارين"], answer:"نيل أرمسترونج" },
+        { q:"ما هي عاصمة إيطاليا؟", options:["روما","ميلانو","تورينو","فلورنسا"], answer:"روما" },
+        { q:"ما هو أثقل معدن طبيعي؟", options:["الأوزميوم","البلاتين","الذهب","الرصاص"], answer:"الأوزميوم" },
+        { q:"من هو مخترع المصباح الكهربائي؟", options:["توماس أديسون","نيكولا تيسلا","غراهام بيل","ألبرت أينشتاين"], answer:"توماس أديسون" },
+        { q:"ما هي عاصمة اليابان؟", options:["طوكيو","كيوتو","أوساكا","ناغويا"], answer:"طوكيو" },
+        { q:"ما هو أكبر كائن حي على وجه الأرض؟", options:["الحوت الأزرق","الفيل الأفريقي","القرش الحوتي","الأخطبوط العملاق"], answer:"الحوت الأزرق" },
+        { q:"من هو مؤسس علم النفس الحديث؟", options:["سيغموند فرويد","كارل يونغ","بافلوف","ماسلو"], answer:"سيغموند فرويد" },
+        { q:"ما هي أسرع طائرة في العالم؟", options:["SR-71 بلاكبيرد","F-22 رابتور","الميراج","السوخوي"], answer:"SR-71 بلاكبيرد" },
+        { q:"من هو الفيلسوف اليوناني الذي قال 'أنا أعلم أني لا أعلم شيئاً'؟", options:["سقراط","أفلاطون","أرسطو","إبيقور"], answer:"سقراط" }
     ],
-    "الينور": [
-        {
-            q: 'كلم الرب موسى قائلًا كلم كل جماعة بني إسرائيل وقل لهم تكونون _____ لأني _____ الرب إلهكم',
-            blanks: ["قديسين", "قدوس"],
-            hint: "الكلمتان: قديسين / قدوس",
-            type: "fill"
-        },
-        {
-            q: 'من أهم ما يشير للثالوث في العهد القديم — اختر الإجابة الصحيحة:',
-            options: [
-                "خلق الإنسان — استخدام الله ضمير جمع في بعض الآيات — بلبل السنة الناس عند برج بابل",
-                "المعجزات فقط",
-                "الأنبياء فقط",
-                "الوصايا العشر"
-            ],
-            answer: "خلق الإنسان — استخدام الله ضمير جمع في بعض الآيات — بلبل السنة الناس عند برج بابل"
-        },
-        {
-            q: 'روح الرب عليّ لأن الرب مسحني البشر المساكين ... البشر بسنه مقبوله ... من قرأ هذا الجزء بالهيكل إلى هذه الآية فقط؟',
-            options: ["إشعياء النبي", "السيد المسيح", "موسى", "داود النبي"],
-            answer: "السيد المسيح"
-        },
-        {
-            q: 'روح السيد الرب عليّ لأن الرب مسحني لأبشر المساكين أرسلني لأعصب منكسري القلب لأنادي للمسبيين بالعتق وللمأسورين بالاطلاق — ما هو الحل؟',
-            options: ["السيد المسيح","يوحنا المعمدان","إلياء النبي","بطرس الرسول"],
-            answer: "السيد المسيح"
-        },
-        {
-            q: 'من نبوات العهد الدالة على ألوهية السيد المسيح ويقال في الجمعة العظيمة: (كرسيك يا الله — قال الرب لربي) — اختر الصحيح:',
-            options: ["كرسيك يا الله","قال الرب لربي","الاثنين صح","لا شيء من ذلك"],
-            answer: "كرسيك يا الله"
-        },
-        {
-            q: 'أعلنت الملائكة ألوهية السيد المسيح في أي من هذه المواقف؟',
-            options: ["الحديث مع المريمات يوم القيامة","إخراج الشياطين إلى الخنازير","إقامة لعازر","تحويل الماء إلى خمر"],
-            answer: "الحديث مع المريمات يوم القيامة"
-        },
-        {
-            q: 'هذا هو ابني الحبيب الذي به سررت — هذا القول هو:',
-            options: ["شهادة الآب للمسيح","شهادة الروح القدس للمسيح","شهادة الجموع للمسيح","شهادة الملائكة للمسيح"],
-            answer: "شهادة الآب للمسيح"
-        },
-        {
-            q: 'يا معلم أنت ابن الله — من القائل؟',
-            options: ["نثنائيل","يوحنا","مرقس","لوقا"],
-            answer: "نثنائيل"
-        },
-        {
-            q: 'أنا قد رأيت وشهدت أن هذا هو ابن الله — من القائل؟',
-            options: ["يوحنا المعمدان","يوحنا الحبيب","متى","لوقا"],
-            answer: "يوحنا المعمدان"
-        },
-        {
-            q: 'ها أنا أنظر السموات مفتوحة وابن الإنسان قائماً عن يمين الله — من القائل؟',
-            options: ["اسطفانوس","يوحنا","متى","مرقس"],
-            answer: "اسطفانوس"
-        },
-        {
-            q: 'قال الرب لربي اجلس عن يميني حتى تضع أعدائك موطئاً لقدميك — اليمين يشير إلى؟',
-            options: ["القوة والمجد","مكان جغرافي","زمان محدد","لا شيء من ذلك"],
-            answer: "القوة والمجد"
-        },
-        {
-            q: 'لأنه يولد لنا ولد ونعطى ابناً — ذكرت هذه النبوة بسفر؟',
-            options: ["سفر إشعياء","سفر المزامير","سفر التثنية","سفر الأمثال"],
-            answer: "سفر إشعياء"
-        },
-        {
-            q: 'أيها الأب مجد اسمك فجاء صوت من السماء مجدت وأمجد أيضاً — في أي إنجيل؟',
-            options: ["إنجيل يوحنا","إنجيل مرقس","إنجيل لوقا","إنجيل متى"],
-            answer: "إنجيل يوحنا"
-        },
-        {
-            q: 'أيها الرب العارف قلوب الجميع — صلت الكنيسة الأولى للسيد المسيح — في أي سفر؟',
-            options: ["سفر أعمال الرسل","إنجيل يوحنا","إنجيل مرقس","رسالة كورنثوس الأولى"],
-            answer: "سفر أعمال الرسل"
-        }
-    ]
+"ضربة حظ": [
+    { q:"قولوا مع بعض 'أحنا فريق على الله' 10 مرات بصوت عالي 📢" },
+    { q:"اعمل 10 تمرينات ضغط أو سكوات في نص دقيقة 💪" },
+    { q:"لف في القاعة كلها مرة كاملة وانت بتقول شعار الفريق 🏃" },
+    { q:"قولوا ترنيمة مع بعض بصوت عالي 🎵" },
+    { q:"قول مزمور الأسبوع 📖" },
+    { q:"اختار اسم كوميدي للفريق في الجولة دي، زي 'فريق البخت العجيب' 😂" },
+    { q:"الفريق كله يقول: 'إحنا مظلومين' 5 مرات بنبرة مسلسل عربي 🎭" },
+    { q:"الفريق كله يقف ويقعد 5 مرات وهو بيقول اسم الفريق 🔄" },
+    { q:"الفريق كله يعمل تصفيقة جماعية منظمة لمدة 10 ثواني 👏" },
+    { q:"الفريق كله يرنم أول سطر من ترنيمة تختاروها 🎤" },
+    { q:"الفريق كله يمثل فرحة الفوز بكأس العالم لمدة 5 ثواني 🏆" },
+    { q:"الفريق كله يتكلم بصوت أطفال و هو بيمثل مشهد 🧒" },
+    { q:"الفريق كله يتكلم بصوت روبوت لمدة دقيقة 🤖" },
+    { q:"الفريق كله يقول 'شكراً لجنة التحكيم العادلة' 3 مرات ⚖️" },
+    { q:"الفريق كله يعمل موجة تشجيع (Mexican Wave) 🌊" },
+    { q:"الفريق كله يمثل مشهد حزن على ضياع نقطة 😢" },
+    { q:"الفريق كله يبدل أماكن جلوسه خلال 15 ثانية 🪑" },
+    { q:"الفريق كله يقف دقيقة احترامًا للحظ 🙌" }
+]
 };
 
-// ===== رسم العجلة =====
 function getTotalRemaining() {
     return activeCategories.reduce((s, cat) => s + (quizBank[cat] ? quizBank[cat].length : 0), 0);
 }
 
 function updateStatsBar(selectedCat) {
-    document.getElementById('totalRemaining').textContent = getTotalRemaining();
-    if (selectedCat && quizBank[selectedCat]) {
-        document.getElementById('catRemaining').textContent = quizBank[selectedCat].length;
-    } else {
-        document.getElementById('catRemaining').textContent = '-';
-    }
+    const tr = document.getElementById('totalRemaining');
+    if (tr) tr.textContent = getTotalRemaining();
 }
 
 function drawWheel() {
@@ -499,23 +433,20 @@ function drawWheel() {
         return;
     }
     const seg = (2*Math.PI)/n;
-    const offset = -Math.PI/2; // نبدأ من الأعلى (12 o'clock)
+    const offset = -Math.PI/2;
     for (let i=0; i<n; i++) {
         const startAngle = offset + i*seg;
         const endAngle   = offset + (i+1)*seg;
-        // رسم القطاع
         const CX=canvas.width/2, CY=canvas.height/2, R=canvas.width/2-3;
         ctx.beginPath();
         ctx.fillStyle = activeColors[i];
         ctx.moveTo(CX,CY);
         ctx.arc(CX,CY,R, startAngle, endAngle);
         ctx.lineTo(CX,CY); ctx.fill();
-        // خط فاصل
         ctx.beginPath(); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=1;
         ctx.moveTo(CX,CY);
         ctx.arc(CX,CY,R, startAngle, endAngle);
         ctx.lineTo(CX,CY); ctx.stroke();
-        // نص
         ctx.save();
         ctx.translate(CX,CY);
         ctx.rotate(startAngle + seg/2);
@@ -530,33 +461,57 @@ function drawWheel() {
 drawWheel();
 updateStatsBar(null);
 
-// ===== صوت العجلة =====
+let _audioCtx = null;
+function getAudioCtx() {
+    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (_audioCtx.state === 'suspended') _audioCtx.resume();
+    return _audioCtx;
+}
+document.addEventListener('click', () => { try { getAudioCtx(); } catch(e){} }, { once: true });
+
 function playSpinSound() {
     try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = getAudioCtx();
+        const now = ctx.currentTime;
         const dur = 4.0;
-        const start = audioCtx.currentTime;
-        for (let i=0; i<32; i++) {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            const t = i/31;
-            // يتسارع للنص ثم يتباطأ — easing
-            const clickTime = start + dur * (t < 0.5
-                ? 2*t*t*0.45
-                : (1 - Math.pow(-2*t+2,2)/2));
-            osc.frequency.value = 500 + Math.random()*300;
-            osc.type = "triangle";
-            gain.gain.setValueAtTime(0.15, clickTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, clickTime+0.07);
-            osc.start(clickTime); osc.stop(clickTime+0.08);
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gainMain = ctx.createGain();
+        osc1.type = "sine";
+        osc1.frequency.setValueAtTime(80, now);
+        osc1.frequency.linearRampToValueAtTime(200, now + dur * 0.3);
+        osc1.frequency.linearRampToValueAtTime(80, now + dur);
+        osc2.type = "sine";
+        osc2.frequency.setValueAtTime(160, now);
+        osc2.frequency.linearRampToValueAtTime(400, now + dur * 0.3);
+        osc2.frequency.linearRampToValueAtTime(160, now + dur);
+        gainMain.gain.setValueAtTime(0, now);
+        gainMain.gain.linearRampToValueAtTime(0.3, now + 0.3);
+        gainMain.gain.linearRampToValueAtTime(0.25, now + dur * 0.8);
+        gainMain.gain.linearRampToValueAtTime(0, now + dur);
+        osc1.connect(gainMain); osc2.connect(gainMain);
+        gainMain.connect(ctx.destination);
+        osc1.start(now); osc1.stop(now + dur);
+        osc2.start(now); osc2.stop(now + dur);
+        const ticks = 36;
+        for (let i = 0; i < ticks; i++) {
+            const p = i / (ticks - 1);
+            const t = now + dur * Math.pow(p, 0.35);
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.type = "square";
+            o.frequency.value = 440;
+            g.gain.setValueAtTime(0.15, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+            o.start(t); o.stop(t + 0.035);
         }
     } catch(e) {}
 }
 
 function playTone(freq, dur) {
     try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const audioCtx = getAudioCtx();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain); gain.connect(audioCtx.destination);
@@ -567,41 +522,28 @@ function playTone(freq, dur) {
     } catch(e) {}
 }
 
-// ===== لف العجلة — حساب الفائز صح =====
 function spinWheel() {
     if (activeCategories.length === 0) return;
     const btn = document.getElementById("spinBtn");
     btn.disabled = true;
     playSpinSound();
-
     const n = activeCategories.length;
     const segDeg = 360 / n;
-
-    // عدد لفات كاملة (5-9) + زاوية عشوائية
     const extraSpins = (5 + Math.floor(Math.random() * 5)) * 360;
     const randomDeg  = Math.random() * 360;
     const addedDeg   = extraSpins + randomDeg;
-
     totalDegrees += addedDeg;
-
     canvas.style.transition = 'transform 4s cubic-bezier(0.1, 0.8, 0.1, 1)';
     canvas.style.transform  = `rotate(${totalDegrees}deg)`;
-
     setTimeout(() => {
-        // المؤشر في الأعلى (270° من الصفر) = الزاوية التي يشير إليها
-        // العجلة دارت totalDegrees — نحسب أي قطاع تحت المؤشر
-        const finalAngle = totalDegrees % 360;          // الزاوية الإجمالية mod 360
-        // القطاعات بتبدأ من الأعلى (12 o'clock)
-        // المؤشر ثابت فوق — نحسب أي قطاع وصل للأعلى بعد اللفة
+        const finalAngle = totalDegrees % 360;
         const pointerOnWheel = (360 - finalAngle % 360) % 360;
         const winningIndex   = Math.floor(pointerOnWheel / segDeg) % n;
-
         openQuiz(activeCategories[winningIndex]);
         btn.disabled = false;
     }, 4100);
 }
 
-// ===== فتح السؤال =====
 let currentCategory = null;
 
 function openQuiz(category) {
@@ -620,7 +562,6 @@ function openQuiz(category) {
     nextBtn.style.display = "none";
     nextBtn.onclick = closeModal;
     catRemModal.innerText = "";
-
     updateStatsBar(category);
 
     const questions = quizBank[category];
@@ -643,39 +584,9 @@ function openQuiz(category) {
         feedback.style.color = "#00fff0";
         quizBank[category].splice(ri, 1);
         nextBtn.style.display = "block";
-
-    } else if (qObj.type === "fill") {
-        // سؤال ملء الفراغات (الينور)
-        const inp = document.createElement('input');
-        inp.type = 'text'; inp.className = 'fill-input';
-        inp.placeholder = 'اكتب الكلمتين المفقودتين...';
-        const checkBtn = document.createElement('button');
-        checkBtn.className = 'check-btn'; checkBtn.innerText = 'تحقق ✔';
-        checkBtn.onclick = () => {
-            const val = inp.value.trim();
-            const correct = qObj.blanks.every(b => val.includes(b));
-            if (correct) {
-                feedback.innerText = "إجابة صحيحة! 🎉";
-                feedback.style.color = "#21bf73";
-                playTone(523,0.4);
-                if (activeTeam !== null) { scores[activeTeam]++; renderScoreboard(); }
-            } else {
-                feedback.innerText = `إجابة خاطئة! الإجابة: ${qObj.blanks.join(' / ')} ❌`;
-                feedback.style.color = "#ff4b5c";
-                playTone(150,0.5);
-            }
-            quizBank[category].splice(ri, 1);
-            updateStatsBar(category);
-            catRemModal.innerText = `أسئلة متبقية في القسم: ${quizBank[category].length}`;
-            inp.disabled = true; checkBtn.disabled = true;
-            nextBtn.style.display = "block";
-        };
-        optionsBox.appendChild(inp);
-        optionsBox.appendChild(checkBtn);
-
     } else {
-        // سؤال اختيار متعدد
-        qObj.options.forEach(opt => {
+        const shuffled = [...qObj.options].sort(() => Math.random() - 0.5);
+        shuffled.forEach(opt => {
             const b = document.createElement("button");
             b.className = "option-btn"; b.innerText = opt;
             b.onclick = () => checkAnswer(b, opt, qObj.answer, category, ri);
@@ -686,7 +597,6 @@ function openQuiz(category) {
     modal.style.display = "flex";
 }
 
-// ===== تحقق MCQ =====
 function checkAnswer(selectedBtn, selected, correct, category, ri) {
     document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
     const feedback = document.getElementById("modalFeedback");
@@ -700,23 +610,84 @@ function checkAnswer(selectedBtn, selected, correct, category, ri) {
         selectedBtn.classList.add("correct");
         feedback.innerText = "إجابة صحيحة! برافو 🥳🎉";
         feedback.style.color = "#21bf73";
-        playTone(523,0.4);
-        scores[activeTeam]++;
-        saveScores();
-        renderScoreboard();
+        (function(){
+            const ctx = getAudioCtx();
+            const now = ctx.currentTime;
+            [[523,0],[659,0.15],[784,0.28],[1047,0.4]].forEach(([freq,delay]) => {
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.connect(g); g.connect(ctx.destination);
+                o.type = 'triangle';
+                o.frequency.setValueAtTime(freq * 0.98, now + delay);
+                o.frequency.linearRampToValueAtTime(freq, now + delay + 0.05);
+                g.gain.setValueAtTime(0, now + delay);
+                g.gain.linearRampToValueAtTime(0.35, now + delay + 0.03);
+                g.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.4);
+                o.start(now + delay); o.stop(now + delay + 0.45);
+            });
+            [2093, 2637].forEach((freq, i) => {
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.connect(g); g.connect(ctx.destination);
+                o.type = 'sine'; o.frequency.value = freq;
+                const t = now + 0.35 + i * 0.1;
+                g.gain.setValueAtTime(0.12, t);
+                g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+                o.start(t); o.stop(t + 0.2);
+            });
+        })();
+        const ptsDiv = document.createElement("div");
+        ptsDiv.style.cssText = "margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;";
+        ptsDiv.innerHTML = "<div style='color:#aaa;font-size:13px;width:100%;margin-bottom:4px;'>كام نقطة للفريق؟</div>";
+        [1,2,3,5,10].forEach(n => {
+            const pb = document.createElement("button");
+            pb.innerText = n + " نقطة";
+            pb.style.cssText = "background:linear-gradient(45deg,#00fff0,#0081ff);border:none;color:#1a1a2e;padding:8px 16px;border-radius:20px;font-size:15px;font-weight:bold;cursor:pointer;";
+            pb.onclick = () => {
+                scores[activeTeam] += n;
+                saveScores();
+                renderScoreboard();
+                ptsDiv.remove();
+                document.getElementById("nextBtn").style.display = "block";
+            };
+            ptsDiv.appendChild(pb);
+        });
+        document.getElementById("modalFeedback").after(ptsDiv);
+        return;
     } else {
         selectedBtn.classList.add("wrong");
         feedback.innerText = "إجابة خاطئة! ❌";
         feedback.style.color = "#ff4b5c";
-        playTone(150,0.5);
+        (function(){
+            const ctx = getAudioCtx();
+            const now = ctx.currentTime;
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.type = 'sawtooth';
+            o.frequency.setValueAtTime(350, now);
+            o.frequency.linearRampToValueAtTime(150, now + 0.6);
+            g.gain.setValueAtTime(0.3, now);
+            g.gain.linearRampToValueAtTime(0.25, now + 0.3);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+            o.start(now); o.stop(now + 0.7);
+            const o2 = ctx.createOscillator();
+            const g2 = ctx.createGain();
+            o2.connect(g2); g2.connect(ctx.destination);
+            o2.type = 'square';
+            o2.frequency.setValueAtTime(180, now + 0.1);
+            o2.frequency.linearRampToValueAtTime(100, now + 0.6);
+            g2.gain.setValueAtTime(0.1, now + 0.1);
+            g2.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+            o2.start(now + 0.1); o2.stop(now + 0.7);
+        })();
         document.querySelectorAll(".option-btn").forEach(b => {
             if (b.innerText === correct) b.classList.add("correct");
         });
+        nextBtn.style.display = "block";
     }
-    nextBtn.style.display = "block";
 }
 
-// ===== إغلاق =====
 function closeModal() {
     document.getElementById("quizModal").style.display = "none";
     if (currentCategory && quizBank[currentCategory] && quizBank[currentCategory].length === 0) {
@@ -725,7 +696,6 @@ function closeModal() {
     updateStatsBar(null);
 }
 
-// ===== إزالة قسم =====
 function removeCategory(category) {
     const idx = activeCategories.indexOf(category);
     if (idx !== -1) { activeCategories.splice(idx,1); activeColors.splice(idx,1); }
